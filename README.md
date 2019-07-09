@@ -12,6 +12,11 @@ The classifier was built using mulitiple microarray and RNA-Seq datasets. As the
 
 ## Results
 
+The results reflect testing among 2 separate datasets although more independent datasets are needed and further refinement of the model is necessary. The overall trend is that the model/function can discern WNT and SHH very well but has a tougher time with Group 3 and Group 4 which may be expected as Group 3 and Group 4 are not characterized as well. 
+
+![Results](images/resultsDataset3_4.png)
+
+
 
 
 
