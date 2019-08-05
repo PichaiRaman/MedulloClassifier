@@ -19,8 +19,8 @@ library("caret")
 library("preprocessCore");
 source("calcScore.R")
 
-classifyGSE85217 <- function(signatureProbesLoc="../../results/V5_CombosUp/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="../../results/V5_CombosUp/medulloSetsUp.RDS")
-{
+classifyGSE85217 <- function(signatureProbesLoc="bestFeaturesNew.RDS", medulloGeneSetsUpLoc="medulloSetsUp.RDS")
+{#hwlwowo testing
 
 load("../../data/loadedGSE_85217.RData")
 
@@ -99,7 +99,7 @@ print(paste("Gene Ratios created and processing ", nrow(geneRatioOut), "rows", s
 
 geneRatioOut <- geneRatioOut[intersect(rownames(geneRatioOut), signatureProbes),]
 
-medulloGeneSetsUp <- readRDS("../../results/V5_CombosUp/medulloSetsUp.RDS");
+medulloGeneSetsUp <- readRDS("medulloSetsUp.RDS");
 
 medulloGeneSetsUp$WNT <- intersect(medulloGeneSetsUp$WNT, rownames(geneRatioOut))
 medulloGeneSetsUp$SHH <- intersect(medulloGeneSetsUp$SHH, rownames(geneRatioOut))

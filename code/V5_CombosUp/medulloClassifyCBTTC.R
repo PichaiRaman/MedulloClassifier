@@ -60,7 +60,7 @@ resM <- res[,rownames(clinDataM)]
 ######################################
 
 #Now classify samples
-signatureProbes <- readRDS("../../results/V5_CombosUp/bestFeaturesNew.RDS");
+signatureProbes <- readRDS("bestFeaturesNew.RDS");
 
 getGenes <- function(x)
 {
@@ -104,7 +104,7 @@ print(paste("Gene Ratios created and processing ", nrow(geneRatioOut), "rows", s
 
 geneRatioOut <- geneRatioOut[intersect(rownames(geneRatioOut), signatureProbes),]
 
-medulloGeneSetsUp <- readRDS("../../results/V5_CombosUp/medulloSetsUp.RDS");
+medulloGeneSetsUp <- readRDS("medulloSetsUp.RDS");
 
 medulloGeneSetsUp$WNT <- intersect(medulloGeneSetsUp$WNT, rownames(geneRatioOut))
 medulloGeneSetsUp$SHH <- intersect(medulloGeneSetsUp$SHH, rownames(geneRatioOut))

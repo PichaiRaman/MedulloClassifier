@@ -251,7 +251,10 @@ allGeneCombos <- c(shhGeneCombosUp, WNTGeneCombosUp, g4GeneCombosUp, g3GeneCombo
 #Plots
 #####################
 #Heatmap
-png("../../results/V5_CombosUp/geneRatios_Heatmap.png", width=800, height=800, res=150)
+#png("../../results/V5_CombosUp/geneRatios_Heatmap.png", width=800, height=800, res=150)
+#pheatmap(log2(geneRatioOut[allGeneCombos,]+1), scale="row", show_rownames=F, show_colnames=F, annotation_col=sampAnnot[2],clustering_distance_cols="correlation")
+#dev.off()
+png("geneRatios_Heatmap.png", width=800, height=800, res=150)
 pheatmap(log2(geneRatioOut[allGeneCombos,]+1), scale="row", show_rownames=F, show_colnames=F, annotation_col=sampAnnot[2],clustering_distance_cols="correlation")
 dev.off()
 
