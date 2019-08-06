@@ -20,7 +20,7 @@ library("preprocessCore");
 source("calcScore.R")
 
 classifyGSE85217 <- function(signatureProbesLoc="bestFeaturesNew.RDS", medulloGeneSetsUpLoc="medulloSetsUp.RDS")
-{#hwlwowo testing
+{
 
 load("../../data/loadedGSE_85217.RData")
 
