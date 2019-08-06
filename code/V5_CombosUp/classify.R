@@ -15,14 +15,12 @@ library("preprocessCore");
 source("calcScore.R")
 
 
-classify <- function(dataset = NULL, 
-					 signatureProbesLoc="bestFeaturesNew.RDS",
-                     medulloGeneSetsUpLoc="medulloSetsUp.RDS")
+classify <- function(dataset = NULL, signatureProbesLoc="bestFeaturesNew.RDS",medulloGeneSetsUpLoc="medulloSetsUp.RDS")
 {
 ############# 
 # Initialize
 #############
-load("../../data/dataset.RData")
+load(paste("../../data/", dataset,".RData", sep=""))
 
 ###############
 # Process Data
@@ -42,7 +40,9 @@ if (dataset == "loadedGSE_109401") {
 
 	geneAnnot <- geneAnnot[,c("ID", "HGNC.symbol")];
 	colnames(geneAnnot)[2] <- "Gene.Symbol";
-
+  
+	exprs <- exprs_109401
+	annot <- annot_109401
 	exprs_Tmp <- normalize.quantiles(as.matrix(exprs));
 	rownames(exprs_Tmp) <- rownames(exprs);
 	colnames(exprs_Tmp )<- colnames(exprs);
@@ -59,6 +59,8 @@ if (dataset == "loadedGSE_109401") {
 		#mapping <- mapping[!duplicated(mapping[,1]),]
 
 		colnames(geneAnnot) <- c("ID", symbol);
+		exprs <- exprs_85217
+		annot <- annot_85217
 		exprs_Tmp <- normalize.quantiles(as.matrix(exprs));
 		rownames(exprs_Tmp) <- gsub("_at", "", rownames(exprs));
 		colnames(exprs_Tmp )<- colnames(exprs);
@@ -70,11 +72,18 @@ if (dataset == "loadedGSE_109401") {
 		symbol = "Gene.Symbol"
 		geneAnnot <- read.delim("../../data/GPL570-55999.txt", skip=16);
 		geneAnnot <- geneAnnot[,c("ID", symbol)];
+		exprs <- exprs_37418
+		annot <- annot_37418
 		exprs_Tmp <- normalize.quantiles(as.matrix(exprs));
 		rownames(exprs_Tmp) <- rownames(exprs);
 		colnames(exprs_Tmp )<- colnames(exprs);
 		
-
+		# Update Class
+		# myClassActual <- as.character(annot[,43]);
+		# myClassActual <- gsub("G3", "Group3", myClassActual)
+		# myClassActual <- gsub("G4", "Group4", myClassActual)
+		# myClassActual <- gsub("SHH OUTLIER", "SHH", myClassActual)
+		# print("Classified");
 
 	} else {
 		print("Invalid Dataset Entered")
@@ -152,38 +161,56 @@ medulloGeneSetsUp$SHH <- intersect(medulloGeneSetsUp$SHH, rownames(geneRatioOut)
 medulloGeneSetsUp$Group3 <- intersect(medulloGeneSetsUp$Group3, rownames(geneRatioOut))
 medulloGeneSetsUp$Group4 <- intersect(medulloGeneSetsUp$Group4, rownames(geneRatioOut))
 
-#Update class
-myClassActual <- as.character(annot_37418[,43]);
-myClassActual <- gsub("G3", "Group3", myClassActual)
-myClassActual <- gsub("G4", "Group4", myClassActual)
-myClassActual <- gsub("SHH OUTLIER", "SHH", myClassActual)
-print("Classified");
 
-
-myMat <- calcScoreMat(geneRatioOut, medulloGeneSetsUp);
-myClassPred <- colnames(myMat)[max.col(myMat,ties.method="first")]
-myScore <- sum(myClassPred==myClassActual)/(length(myClassActual)-2)
-
-sampAnnot <- data.frame(myClassPred, myClassActual);
-colnames(sampAnnot) <- c("Pred", "Actual")
-rownames(sampAnnot) <- colnames(geneRatioOut)
-sampAnnot[,"Correct"] <- myClassPred==myClassActual
-#pheatmap(geneRatioOut ,show_rownames=F, show_colnames=F, annotation_col=sampAnnot,clustering_distance_cols="correlation")
-
-sampAnnot <- sampAnnot[sampAnnot[,2]!="U",]
-sampAnnot[,2] <- factor(sampAnnot[,2], levels=c("Group3", "Group4", "WNT", "SHH"))
-sampAnnot[,1] <- factor(sampAnnot[,1], levels=c("Group3", "Group4", "WNT", "SHH"))
-
-print(confusionMatrix(sampAnnot[,1], sampAnnot[,2]));
-return(myScore)
-
-
-
-
-
+if (dataset == "loadedGSE_85217" | dataset == "loadedGSE_109401") {
+  #Update class
+  myClassActual <- as.character(annot[,"subgroup:ch1"]);
+  myClassActual <- gsub("Group 3", "Group3", myClassActual)
+  myClassActual <- gsub("Group 4", "Group4", myClassActual)
+  print("Classified");
+  
+  myMat <- calcScoreMat(geneRatioOut, medulloGeneSetsUp);
+  myClassPred <- colnames(myMat)[max.col(myMat,ties.method="first")]
+  myScore <- sum(myClassPred==myClassActual)/(length(myClassActual))
+  
+  sampAnnot <- data.frame(myClassPred, myClassActual);
+  colnames(sampAnnot) <- c("Pred", "Actual")
+  rownames(sampAnnot) <- colnames(geneRatioOut)
+  sampAnnot[,"Correct"] <- myClassPred==myClassActual
+  print(confusionMatrix(sampAnnot[,1], sampAnnot[,2]));
+  return(myScore)
+  
+} else {
+  #Update class
+  myClassActual <- as.character(annot[,43]);
+  myClassActual <- gsub("G3", "Group3", myClassActual)
+  myClassActual <- gsub("G4", "Group4", myClassActual)
+  myClassActual <- gsub("SHH OUTLIER", "SHH", myClassActual)
+  print("Classified");
+  
+  
+  myMat <- calcScoreMat(geneRatioOut, medulloGeneSetsUp);
+  myClassPred <- colnames(myMat)[max.col(myMat,ties.method="first")]
+  myScore <- sum(myClassPred==myClassActual)/(length(myClassActual)-2)
+  
+  sampAnnot <- data.frame(myClassPred, myClassActual);
+  colnames(sampAnnot) <- c("Pred", "Actual")
+  rownames(sampAnnot) <- colnames(geneRatioOut)
+  sampAnnot[,"Correct"] <- myClassPred==myClassActual
+  #pheatmap(geneRatioOut ,show_rownames=F, show_colnames=F, annotation_col=sampAnnot,clustering_distance_cols="correlation")
+  
+  sampAnnot <- sampAnnot[sampAnnot[,2]!="U",]
+  sampAnnot[,2] <- factor(sampAnnot[,2], levels=c("Group3", "Group4", "WNT", "SHH"))
+  sampAnnot[,1] <- factor(sampAnnot[,1], levels=c("Group3", "Group4", "WNT", "SHH"))
+  
+  print(confusionMatrix(sampAnnot[,1], sampAnnot[,2]));
+  return(myScore)
+}
 
 
 
 
 
 }
+
+
