@@ -1,3 +1,5 @@
 data/
 results/
 code/Archive/
+.DS_Store
+code/.DS_Store

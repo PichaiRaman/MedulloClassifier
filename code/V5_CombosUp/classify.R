@@ -22,10 +22,6 @@ classify <- function(dataset = NULL, signatureProbesLoc="bestFeaturesNew.RDS",me
 #############
 load(paste("../../data/", dataset,".RData", sep=""))
 
-###############
-# Process Data
-###############
-# processData(dataset)
 
 if (dataset == "loadedGSE_109401") {
 
@@ -65,8 +61,6 @@ if (dataset == "loadedGSE_109401") {
 		rownames(exprs_Tmp) <- gsub("_at", "", rownames(exprs));
 		colnames(exprs_Tmp )<- colnames(exprs);
 		
-		
-
 
 	} else if (dataset == "loadedGSE_37418") {
 		symbol = "Gene.Symbol"
@@ -77,13 +71,6 @@ if (dataset == "loadedGSE_109401") {
 		exprs_Tmp <- normalize.quantiles(as.matrix(exprs));
 		rownames(exprs_Tmp) <- rownames(exprs);
 		colnames(exprs_Tmp )<- colnames(exprs);
-		
-		# Update Class
-		# myClassActual <- as.character(annot[,43]);
-		# myClassActual <- gsub("G3", "Group3", myClassActual)
-		# myClassActual <- gsub("G4", "Group4", myClassActual)
-		# myClassActual <- gsub("SHH OUTLIER", "SHH", myClassActual)
-		# print("Classified");
 
 	} else {
 		print("Invalid Dataset Entered")
@@ -206,11 +193,6 @@ if (dataset == "loadedGSE_85217" | dataset == "loadedGSE_109401") {
   print(confusionMatrix(sampAnnot[,1], sampAnnot[,2]));
   return(myScore)
 }
-
-
-
-
-
 }
 
 
