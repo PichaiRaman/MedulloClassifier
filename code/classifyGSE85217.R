@@ -19,14 +19,14 @@ library("caret")
 library("preprocessCore");
 source("calcScore.R")
 
-classifyGSE85217 <- function(signatureProbesLoc="../../results/V5_CombosUp/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="../../results/V5_CombosUp/medulloSetsUp.RDS")
+classifyGSE85217 <- function(signatureProbesLoc="../results/model/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="../results/model/medulloSetsUp.RDS")
 {
 
-load("../../data/loadedGSE_85217.RData")
+load("../data/loadedGSE_85217.RData")
 
 
 #Convert expression matrix to gene symbol
-mapping <- read.delim("../../data/mappingRefseq.txt")
+mapping <- read.delim("../data/mappingRefseq.txt")
 mapping <- mapping[,c(1,3)];
 mapping <- unique(mapping);
 geneAnnot <- mapping[mapping[,2]!="",]
@@ -99,7 +99,7 @@ print(paste("Gene Ratios created and processing ", nrow(geneRatioOut), "rows", s
 
 geneRatioOut <- geneRatioOut[intersect(rownames(geneRatioOut), signatureProbes),]
 
-medulloGeneSetsUp <- readRDS("../../results/V5_CombosUp/medulloSetsUp.RDS");
+medulloGeneSetsUp <- readRDS("../results/model/medulloSetsUp.RDS");
 
 medulloGeneSetsUp$WNT <- intersect(medulloGeneSetsUp$WNT, rownames(geneRatioOut))
 medulloGeneSetsUp$SHH <- intersect(medulloGeneSetsUp$SHH, rownames(geneRatioOut))

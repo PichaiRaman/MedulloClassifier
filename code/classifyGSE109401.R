@@ -24,15 +24,15 @@ source("calcScore.R")
 
 
 
-classifyGSE109401 <- function(signatureProbesLoc="../../results/V5_CombosUp/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="../../results/V5_CombosUp/medulloSetsUp.RDS")
+classifyGSE109401 <- function(signatureProbesLoc="../results/model/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="../results/model/medulloSetsUp.RDS")
 {
 
-load("../../data/loadedGSE_109401.RData")
+load("../data/loadedGSE_109401.RData")
 
 
 #Convert expression matrix to gene symbol
-geneAnnot <- read.delim("../../data/GPL16686.txt", skip=8);
-mapping <- read.delim("../../data/mappingRefseq.txt")
+geneAnnot <- read.delim("../data/GPL16686.txt", skip=8);
+mapping <- read.delim("../data/mappingRefseq.txt")
 mapping <- mapping[3:4];
 mapping <- unique(mapping);
 mapping <- mapping[mapping[,2]!="",]
@@ -107,7 +107,7 @@ print(paste("Gene Ratios created and processing ", nrow(geneRatioOut), "rows", s
 
 geneRatioOut <- geneRatioOut[intersect(rownames(geneRatioOut), signatureProbes),]
 
-medulloGeneSetsUp <- readRDS("../../results/V5_CombosUp/medulloSetsUp.RDS");
+medulloGeneSetsUp <- readRDS("../results/model/medulloSetsUp.RDS");
 
 medulloGeneSetsUp$WNT <- intersect(medulloGeneSetsUp$WNT, rownames(geneRatioOut))
 medulloGeneSetsUp$SHH <- intersect(medulloGeneSetsUp$SHH, rownames(geneRatioOut))

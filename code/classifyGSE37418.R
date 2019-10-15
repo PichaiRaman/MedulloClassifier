@@ -21,12 +21,12 @@ source("calcScore.R")
 
 
 
-classifyGSE37418 <- function(signatureProbesLoc="../../results/V5_CombosUp/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="../../results/V5_CombosUp/medulloSetsUp.RDS")
+classifyGSE37418 <- function(signatureProbesLoc="../results/model/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="../results/model/medulloSetsUp.RDS")
 {
-load("../../data/loadedGSE_37418.RData")
+load("../data/loadedGSE_37418.RData")
 
 #Convert expression matrix to gene symbol
-geneAnnot <- read.delim("../../data/GPL570-55999.txt", skip=16);
+geneAnnot <- read.delim("../data/GPL570-55999.txt", skip=16);
 geneAnnot <- geneAnnot[,c("ID", "Gene.Symbol")];
 exprs_37418_Tmp <- normalize.quantiles(as.matrix(exprs_37418));
 rownames(exprs_37418_Tmp) <- rownames(exprs_37418);
