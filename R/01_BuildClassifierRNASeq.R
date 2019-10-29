@@ -15,7 +15,7 @@ library(reshape2)
 # Source scripts 
 source("R/utils/runLimma.R")
 source("R/utils/pubTheme.R")
-source("R/createRatio.R")
+source("R/utils/createRatio.R")
 
 ######################
 # 1. Read in RNA-Seq Data and Format Matrix

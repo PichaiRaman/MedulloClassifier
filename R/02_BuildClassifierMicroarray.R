@@ -11,8 +11,8 @@ library(preprocessCore)
 # Source Functions
 source("R/utils/runLimma.R")
 source("R/utils/pubTheme.R")
-source("R/getGenes.R")
-source("R/createRatio.R")
+source("R/utils/getGenes.R")
+source("R/utils/createRatio.R")
 
 ################################
 # 1. Load and format data to one gene 
