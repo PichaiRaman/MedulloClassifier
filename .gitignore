@@ -1,6 +1,2 @@
-data/
-results/
-code/Archive/
-.DS_Store
-.gitignore.swp
-code/.DS_Store
+data/*
+results/*
