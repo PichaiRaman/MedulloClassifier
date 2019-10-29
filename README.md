@@ -10,6 +10,15 @@ The classifier was built using multiple microarray and RNA-Seq datasets. As ther
 
 ![Workflow](images/workflow.png)
 
+## Code 
+
+	├── 01_BuildClassifierRNASeq.R # Build classifier using RNA-seq
+	├── 02_BuildClassifierMicroarray.R # Build classifier using Microarray
+	├── 03_BuildClassifierMaster.R # Test classifier on small datasets
+	├── 04_classifyGSE85217.R # Test classifier on GSE124814 (n = 1286; 15 datasets)
+	├── 05_summarystats_GSE124814.R # Generate summary statistics and visuals for GSE124814
+
+
 ## Results
 
 The results reflect testing among 15 separate datasets from the GEO dataset GSE124814 although more independent datasets are needed and further refinement of the model is necessary. The overall trend is that the model/function can discern WNT and SHH very well but has a tougher time with Group 3 and Group 4 which may be expected as Group 3 and Group 4 are not characterized as well. The classifier is still being refined but can currently differentiate between the 4 subtypes with a median accuracy of 97.80%.
