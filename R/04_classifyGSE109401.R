@@ -4,24 +4,28 @@
 # Date: 6/7/2019
 ################################ 
 
-# Let's get all the data
-# library("GEOquery")
-# require("preprocessCore")
-# data_109401 <- getGEO('GSE109401',GSEMatrix=TRUE)
-# annot_109401 <- pData(phenoData(data_109401[[1]]))
-# exprs_109401 <- exprs(data_109401[[1]])
-# annot_109401 <- annot_109401[annot_109401[,"subgroup:ch1"]!="Cerebellum",]
-# exprs_109401 <- exprs_109401[,rownames(annot_109401)]
-# save.image("loadedGSE_109401.RData")
-
 library(pheatmap)
 library(GSVA)
 library(caret)
 library(preprocessCore)
-source(calcScore.R)
 library(reshape2)
-source('R/getGenes.R')
-source('R/createRatio.R')
+source('R/utils/calcScore.R')
+source('R/utils/getGenes.R')
+source('R/utils/createRatio.R')
+
+# Let's get all the data
+if(file.exists('data/loadedGSE_109401.RData')){
+  load('data/loadedGSE_109401.RData')
+} else {
+  library(GEOquery)
+  data_109401 <- getGEO('GSE109401',GSEMatrix=TRUE)
+  annot_109401 <- pData(phenoData(data_109401[[1]]))
+  exprs_109401 <- exprs(data_109401[[1]])
+  annot_109401 <- annot_109401[annot_109401[,"subgroup:ch1"]!="Cerebellum",]
+  exprs_109401 <- exprs_109401[,rownames(annot_109401)]
+  save.image("data/loadedGSE_109401.RData")
+}
+
 
 classifyGSE109401 <- function(signatureProbesLoc="data/model/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="data/model/medulloSetsUp.RDS") {
 
@@ -76,7 +80,7 @@ classifyGSE109401 <- function(signatureProbesLoc="data/model/bestFeaturesNew.RDS
   print(paste("Cor Matrix Created and processing", nrow(corGenes), "rows", sep=" "))
   
   exprs_109401 <- as.matrix(exprs_109401)
-  geneRatioOut <- apply(corGenes, FUN=createRatio, MARGIN=1)
+  geneRatioOut <- apply(corGenes, FUN = function(x) createRatio(exprs = exprs_109401, x = x), MARGIN=1)
   geneRatioOut <- data.frame(t(geneRatioOut))
   rownames(geneRatioOut) <- paste(corGenes[,1], corGenes[,2], sep="_")
   colnames(geneRatioOut) <- colnames(exprs_109401)

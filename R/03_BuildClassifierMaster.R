@@ -39,9 +39,3 @@ source("R/04_classifyGSE37418.R")
 class109401 <- classifyGSE109401()
 class37418 <- classifyGSE37418()
 class85217 <- classifyGSE85217()
-
-
-
-
-
-

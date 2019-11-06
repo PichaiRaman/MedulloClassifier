@@ -7,6 +7,7 @@
 # Load libraries
 library(reshape2)
 library(preprocessCore)
+library(GEOquery)
 
 # Source Functions
 source("R/utils/runLimma.R")
@@ -20,7 +21,14 @@ source("R/utils/createRatio.R")
 ################################
 
 # Load data
-load("data/loadedGSE_37418.RData")
+if(file.exists('data/loadedGSE_37418.RData')){
+  load("data/loadedGSE_37418.RData")
+} else {
+  data_37418 <- getGEO('GSE37418',GSEMatrix=TRUE)
+  annot_37418 <- pData(phenoData(data_37418[[1]]))
+  exprs_37418 <- exprs(data_37418[[1]])
+  save.image("data/loadedGSE_37418.RData")
+}
 
 # Convert expression matrix to gene symbol
 geneAnnot <- read.delim("data/GPL570-55999.txt", skip=16)
@@ -69,7 +77,7 @@ print(paste("Cor Matrix Created and processing", nrow(corGenes), "rows", sep=" "
 
 # Now create all gene ratios, this part will take a while
 exprs_37418 <- as.matrix(exprs_37418)
-geneRatioOut <- apply(corGenes, FUN=createRatio, MARGIN=1)
+geneRatioOut <- apply(corGenes, FUN = function(x) createRatio(exprs = exprs_37418, x = x), MARGIN=1)
 geneRatioOut <- data.frame(t(geneRatioOut))
 rownames(geneRatioOut) <- paste(corGenes[,1], corGenes[,2], sep="_")
 colnames(geneRatioOut) <- colnames(exprs_37418)
@@ -127,6 +135,9 @@ medulloGeneSetsUp$WNT <- intersect(WNTGeneCombosUp, rownames(geneRatioOut))
 medulloGeneSetsUp$SHH <- intersect(shhGeneCombosUp, rownames(geneRatioOut))
 medulloGeneSetsUp$Group3 <- intersect(g3GeneCombosUp, rownames(geneRatioOut))
 medulloGeneSetsUp$Group4 <- intersect(g4GeneCombosUp, rownames(geneRatioOut))
+
+# All the gene combos
+allGeneCombos <- c(shhGeneCombosUp, WNTGeneCombosUp, g4GeneCombosUp, g3GeneCombosUp)
 
 # Print length of each subtype gene ratio signature
 print(paste("The number of gene ratios in the SHH signature is", length(shhGeneCombosUp)))

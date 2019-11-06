@@ -192,29 +192,36 @@ bestGenes <- sort(intersect(upGenes, downGenes)) #1399 genes
 ###################################
 # Start with a heatmap
 png("results/plots/heatmapTopGenes.png", width=1000, height=800, res=150)
-pheatmap::pheatmap(expDataFts_QN[bestGenes,], show_rownames=F, show_colnames=F, annotation_col=sampAnnot[2],clustering_distance_cols="correlation")
+sampAnnot$Subgroup <- factor(sampAnnot$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT"))
+ann_colors = list(
+  Subgroup = c(Group3 = "#F8766D", Group4 = "#7CAE00", SHH = "#00BFC4", WNT = "#C77CFF")
+)
+pheatmap::pheatmap(expDataFts_QN[bestGenes,], 
+                   show_rownames=F, show_colnames=F, 
+                   annotation_col= sampAnnot[2],
+                   annotation_colors =  ann_colors,
+                   clustering_distance_cols="correlation")
 dev.off()
 
 # TSNE with all data
 tsneOut <- Rtsne::Rtsne(t(expDataFts_QN), initial_dims=100, perplexity=20, max_iter=1000)
 tsneOut <- data.frame(tsneOut$Y, sampAnnot)
-ggplot2::ggplot(tsneOut, aes(X1, X2, shape=Subgroup, color=Subgroup))+
-	ggplot2::geom_point()+
+p <- ggplot2::ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
+	ggplot2::geom_point(size = 5, alpha = 0.6)+
 	ggplot2::theme_bw()+
 	ggplot2::ggtitle("T-SNE Medulloblastoma All Genes")+
 	theme_Publication()
-ggsave("results/plots/scatterPlotTSNE_AllGenes.png")
+ggsave(plot = p, filename = "results/plots/scatterPlotTSNE_AllGenes.png", width = 7, height = 6)
 
 # TSNE only using Best Genes data
 tsneOut <- Rtsne(t(log2(expDataFts+1)[bestGenes,]), initial_dims=100, perplexity=20, max_iter=1000)
 tsneOut <- data.frame(tsneOut$Y, sampAnnot)
-ggplot2::ggplot(tsneOut, aes(X1, X2, shape=Subgroup, color=Subgroup))+
-	ggplot2::geom_point()+
+ggplot2::ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
+	ggplot2::geom_point(size = 5, alpha = 0.6)+
 	ggplot2::theme_bw()+
 	ggplot2::ggtitle("T-SNE Medulloblastoma Best Genes")+
 	theme_Publication()
-ggsave("results/plots/scatterPlotTSNE_TopGenes.png")
-
+ggsave(filename = "results/plots/scatterPlotTSNE_TopGenes.png", width = 7, height = 6)
 
 #################################
 # 6. Create Gene Ratios and filter 
@@ -229,7 +236,7 @@ print(paste("Cor Matrix Created and processing", nrow(corGenes), "rows", sep=" "
 
 # Now create all gene ratios, this part will take a while
 expDataFts_QNMat <- as.matrix(expDataFts_QN)
-geneRatioOut <- apply(corGenes, FUN=createRatio, MARGIN=1)
+geneRatioOut <- apply(corGenes, FUN = function(x) createRatio(exprs = expDataFts_QNMat, x = x), MARGIN=1)
 geneRatioOut <- data.frame(t(geneRatioOut))
 rownames(geneRatioOut) <- paste(corGenes[,1], corGenes[,2], sep="_")
 colnames(geneRatioOut) <- colnames(expDataFts_QN)
@@ -287,17 +294,25 @@ print(paste("The total number of gene ratios in the model is", length(allGeneCom
 #####################
 #Heatmap
 png("results/plots/geneRatios_Heatmap.png", width=800, height=800, res=150)
-pheatmap::pheatmap(log2(geneRatioOut[allGeneCombos,]), show_rownames=F, show_colnames=F, annotation_col=sampAnnot[2],clustering_distance_cols="correlation", main="Heatmap Gene Ratios")
+sampAnnot$Subgroup <- factor(sampAnnot$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT"))
+ann_colors = list(
+  Subgroup = c(Group3 = "#F8766D", Group4 = "#7CAE00", SHH = "#00BFC4", WNT = "#C77CFF")
+)
+pheatmap::pheatmap(log2(geneRatioOut[allGeneCombos,]), show_rownames=F, 
+                   show_colnames=F, annotation_col=sampAnnot[2],
+                   annotation_colors = ann_colors,
+                   clustering_distance_cols="correlation", 
+                   main="Heatmap Gene Ratios")
 dev.off()
 
 # TSNE 
 tsneOut <- Rtsne(t(log2(geneRatioOut[allGeneCombos,])), initial_dims=200, perplexity=10, max_iter=500)
 tsneOut <- data.frame(tsneOut$Y, sampAnnot)
-ggplot(tsneOut, aes(X1, X2, shape=Subgroup, color=Subgroup))+
-	geom_point()+
+p <- ggplot(tsneOut, aes(X1, X2, shape=Subgroup, color=Subgroup))+
+	geom_point(size = 5, alpha = 0.6)+
  	theme_Publication()+
  	ggtitle("T-SNE Medulloblastoma Gene Ratios")
-ggsave("results/plots/scatterPlotTSNE_geneRatios.png")
+ggsave(plot = p, filename = "results/plots/scatterPlotTSNE_geneRatios.png", width = 7, height = 6)
 
 #####################
 # 8. Save model

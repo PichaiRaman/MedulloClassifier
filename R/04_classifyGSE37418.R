@@ -4,22 +4,24 @@
 # Date: 6/7/2019
 ################################
 
-# Let's get all the data
-# library("GEOquery")
-# require("preprocessCore")
-# data_37418 <- getGEO('GSE37418',GSEMatrix=TRUE)
-# annot_37418 <- pData(phenoData(data_37418[[1]]))
-# exprs_37418 <- exprs(data_37418[[1]])
-# save.image("data/loadedGSE_37418.RData")
-
 library(pheatmap)
 library(GSVA)
 library(caret)
 library(preprocessCore)
-source(calcScore.R)
 library(reshape2)
-source('R/getGenes.R')
-source('R/createRatio.R')
+source('R/utils/calcScore.R')
+source('R/utils/getGenes.R')
+source('R/utils/createRatio.R')
+
+if(file.exists('data/loadedGSE_37418.RData')) {
+  load("data/loadedGSE_37418.RData")
+}  else {
+  library(GEOquery)
+  data_37418 <- getGEO('GSE37418',GSEMatrix=TRUE)
+  annot_37418 <- pData(phenoData(data_37418[[1]]))
+  exprs_37418 <- exprs(data_37418[[1]])
+  save.image("data/loadedGSE_37418.RData")
+}
 
 classifyGSE37418 <- function(signatureProbesLoc="data/model/bestFeaturesNew.RDS", medulloGeneSetsUpLoc="data/model/medulloSetsUp.RDS") {
 
@@ -67,7 +69,7 @@ classifyGSE37418 <- function(signatureProbesLoc="data/model/bestFeaturesNew.RDS"
   print(paste("Cor Matrix Created and processing", nrow(corGenes), "rows", sep=" "))
   
   exprs_37418 <- as.matrix(exprs_37418)
-  geneRatioOut <- apply(corGenes, FUN=createRatio, MARGIN=1)
+  geneRatioOut <- apply(corGenes, FUN = function(x) createRatio(exprs = exprs_37418, x = x), MARGIN=1)
   geneRatioOut <- data.frame(t(geneRatioOut))
   rownames(geneRatioOut) <- paste(corGenes[,1], corGenes[,2], sep="_")
   colnames(geneRatioOut) <- colnames(exprs_37418)
