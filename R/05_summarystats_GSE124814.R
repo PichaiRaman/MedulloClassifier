@@ -70,7 +70,7 @@ p <- ggplot(for.meta, aes(x = label, y = accuracy, fill = accuracy)) +
   geom_abline(slope = 0, intercept = median(sort(for.meta$accuracy)),  col = "red", lty=2) + 
   scale_fill_continuous(high = "#132B43", low = "#56B1F7") + guides(fill = FALSE)
 p
-ggsave(p, filename = 'results/plots/accuracy_barplot.png', device = "png", width = 7, height = 3)
+ggsave(p, filename = 'results/plots/Figure4A.png', device = "png", width = 7, height = 3)
 
 # Sensitivity and Specificity: Line plot
 sens_spec <- melt(big.res, id.vars = "study")
@@ -91,4 +91,4 @@ q <- ggplot(sens_spec[!is.na(sens_spec$value),], aes(x = study, value, group = t
   theme(legend.text=element_text(size = 8), legend.title = element_text(size = 10)) +
   ylim(c(1, 100))
 q
-ggsave(q, filename = 'results/plots/sens_vs_spec_plot.png', device = "png", width = 7, height = 5)
+ggsave(q, filename = 'results/plots/Figure4B.png', device = "png", width = 7, height = 5)

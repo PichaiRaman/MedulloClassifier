@@ -87,7 +87,7 @@ print(paste("Gene Ratios created and processing", nrow(geneRatioOut), "rows", se
 geneRatioOutM <- reshape2::melt(geneRatioOut)
 
 # Plot of gene ratios in dataset
-png("results/plots/histogramGeneRatiosMicroarray.png", width=800, height=800, res=150)
+png("results/plots/SuppFig2A.png", width=800, height=800, res=150)
 hist(log2(geneRatioOutM[,2]), breaks=1000, main="Histogram of Gene Ratios (Log2)", xlab="Log2 Gene Ratio")
 dev.off()
 

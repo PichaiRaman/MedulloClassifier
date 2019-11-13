@@ -58,7 +58,7 @@ print(paste("After filtering by FPKM, the total number of genes is", nrow(expDat
 myCV <- function(x) { mean(x)/sd(x) }
 allCVs <- log2(apply(expDataFts, FUN=myCV, MARGIN=1))
 allCVs <- (allCVs-mean(allCVs))/sd(allCVs)
-png("results/plots/SuppFig2A.png", width=960, height=960, res=150)
+png("results/plots/SuppFig1B.png", width=960, height=960, res=150)
 hist(allCVs, breaks=1000, xlab="Z-score of CVs (Log2 FPKM)", main="Histogram of Standardized CVs per Gene")
 abline(v=(-1), col="red", lwd=3, lty=2)
 dev.off()
@@ -190,7 +190,8 @@ bestGenes <- sort(intersect(upGenes, downGenes)) #1399 genes
 # 5. Now print some plots / figures for paper to show how genes can discriminate subtypes
 ###################################
 # Start with a heatmap
-png("results/plots/heatmapTopGenes.png", width=1000, height=800, res=150)
+# heatmap top genes
+png("results/plots/Figure1B.png", width=1000, height=800, res=150)
 sampAnnot$Subgroup <- factor(sampAnnot$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT"))
 ann_colors = list(
   Subgroup = c(Group3 = "#F8766D", Group4 = "#7CAE00", SHH = "#00BFC4", WNT = "#C77CFF")
@@ -245,7 +246,7 @@ print(paste("Gene Ratios created and processing ", nrow(geneRatioOut), "rows", s
 geneRatioOutM <- reshape2::melt(geneRatioOut)
 
 # Plot of gene ratios in dataset
-png("results/plots/histogramGeneRatiosRNASeq.png", width=800, height=800, res=150)
+png("results/plots/SuppFig2B.png", width=800, height=800, res=150)
 hist(log2(geneRatioOutM[,2]), breaks=1000, main="Histogram of Gene Ratios (Log2)", xlab="Log2 Gene Ratio")
 dev.off()
 
