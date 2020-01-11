@@ -58,13 +58,16 @@ ds1GER <- readRDS("data/RNASeqDataForPlotDS1.RDS")
 ds1geneRatioOut <- ds1GER[[1]]
 ds1sampAnnot <- ds1GER[[2]]
 
+set.seed(42)
 tsneOut <- Rtsne(t(log2(ds1geneRatioOut[intersect(allGeneCombos, rownames(ds1geneRatioOut)),])), initial_dims=200, perplexity=10, max_iter=500)
 tsneOut <- data.frame(tsneOut$Y, ds1sampAnnot)
+tsneOut$Subgroup <- factor(tsneOut$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT", "U"))
 p <- ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
   geom_point(size = 5, alpha = 0.6)+
   theme_bw()+
   ggtitle("T-SNE Medulloblastoma Gene Ratios - DS1") +
-  theme_Publication() + xlab("PC1") + ylab("PC2")
+  theme_Publication() + xlab("PC1") + ylab("PC2")  +
+  scale_color_manual(values = c("Group3" = "#F8766D", "Group4" = "#7CAE00", "SHH" = "#00BFC4", "WNT" = "#C77CFF", "U" = "#000000"))
 p
 ggsave(plot = p, filename = "results/plots/Figure2A.png", width = 7, height = 6)
 
@@ -73,14 +76,17 @@ ds2GER <- readRDS("data/RNASeqDataForPlotDS2.RDS")
 ds2geneRatioOut <- ds2GER[[1]]
 ds2sampAnnot <- ds2GER[[2]]
 
+set.seed(150)
 tsneOut <- Rtsne(t(log2(ds2geneRatioOut[intersect(allGeneCombos, rownames(ds2geneRatioOut)),])), initial_dims=200, perplexity=10, max_iter=500)
 tsneOut <- data.frame(tsneOut$Y, ds2sampAnnot)
 colnames(tsneOut)[4] <- "Subgroup"
+tsneOut$Subgroup <- factor(tsneOut$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT", "U"))
 p <- ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
   geom_point(size = 5, alpha = 0.6)+
   theme_bw()+
   ggtitle("T-SNE Medulloblastoma Gene Ratios - DS2") +
-  theme_Publication() + xlab("PC1") + ylab("PC2")
+  theme_Publication() + xlab("PC1") + ylab("PC2") +
+  scale_color_manual(values = c("Group3" = "#F8766D", "Group4" = "#7CAE00", "SHH" = "#00BFC4", "WNT" = "#C77CFF", "U" = "#000000"))
 p
 ggsave(plot = p, filename = "results/plots/Figure2B.png", width = 7, height = 6)
 
