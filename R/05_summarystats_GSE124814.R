@@ -11,8 +11,10 @@ library(metafor)
 library(meta)
 library(ggplot2)
 library(reshape2)
+library(xlsx)
 source('R/utils/pubTheme.R')
 
+# function to classify all 15 datasets and save the output
 # function to classify all 15 datasets and save the output
 if(file.exists('results/GSE124814_split_results.RData')){
   print("file exists..")
@@ -22,13 +24,17 @@ if(file.exists('results/GSE124814_split_results.RData')){
   load('data/expr.RData')
   load('data/meta.RData')
   study.ct <- plyr::count(actual$study)
-
-  classify.and.summarize <- function(x, dat){
+  classify.and.summarize <- function(x, dat, type = c("pred", "stats")){
     print(paste0('Study: ', unique(x$study)))
     rownames(x) <- x$id
     dat.sub <- dat[,rownames(x)]
     actual <- x$subtype
     pred <- classify(exprs = dat.sub)
+    pred$study <- unique(x$study)
+    pred <- pred[,c("study", "sample", "best.fit", "p.value")]
+    if(type == "pred") {
+      return(pred)
+    }
     res <- calcStats(myClassActual = actual,  pred$best.fit)
     accuracy <- res[[2]]$stats[[1]]
     sens_spec <- res[[3]][1:2]
@@ -39,10 +45,25 @@ if(file.exists('results/GSE124814_split_results.RData')){
     return(df)
   }
   
-  big.res <- ddply(actual, .variables = "study", .fun = function(x) classify.and.summarize(x, dat))
-  big.res <- dcast(big.res, study~var, value.var = 'val')
+  # save stats
+  stats <- ddply(actual, .variables = "study", .fun = function(x) classify.and.summarize(x, dat, type = "stats"))
+  big.res <- dcast(stats, study~var, value.var = 'val')
   save(big.res, study.ct, file = 'results/GSE124814_split_results.RData')
+  
+  # save predictions
+  pred <- ddply(actual, .variables = "study", .fun = function(x) classify.and.summarize(x, dat, type = "pred"))
+  studies <- unique(pred$study)
+  for(i in 1:length(studies)){
+    tmp <- pred[which(pred$study == studies[i]),]
+    write.xlsx(tmp, file = "results/tables/Table2.xlsx", sheetName = studies[i], row.names = F, append = TRUE)
+  }
 }
+
+# output accuracy metrics in Table2
+res <- merge(study.ct, big.res, by.x = 'x', by.y = 'study')
+colnames(res)[1:2] <- c('Study','Sample_Size')
+res[res == "NA%"] <- NA
+write.xlsx(x = res, file = 'results/tables/Table3.xlsx', row.names = F)
 
 # remove studies that have all Us (15 studies left)
 big.res <- big.res[which(big.res$Accuracy != "NaN%"),]
