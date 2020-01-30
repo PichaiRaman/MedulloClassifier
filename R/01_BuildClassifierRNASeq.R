@@ -10,6 +10,7 @@ library(preprocessCore)
 library(pheatmap)
 library(Rtsne)
 library(reshape2)
+library(ggplot2)
 
 # Source scripts 
 source("R/utils/runLimma.R")
@@ -47,10 +48,17 @@ print(paste("The total number of genes is", nrow(expDataFts)))
 
 # Remove genes that have less than 20 FPKM max
 maxFPKMperGene <- apply(log2(expDataFts), FUN=max, MARGIN=1)
-png("results/plots/SuppFig1A.png", width=960, height=960, res=150)
-hist(maxFPKMperGene, breaks=1000, xlab="Log2 (FPKM)", main="Histogram of Maximum FPKM Per Gene")
-abline(v=log(20), col="red", lwd=3, lty=2)
-dev.off()
+#png("results/plots/SuppFig1A.png", width=960, height=960, res=150)
+#hist(maxFPKMperGene, breaks=1000, xlab="Log2 (FPKM)", main="Histogram of Maximum FPKM Per Gene")
+#abline(v=log(20), col="red", lwd=3, lty=2)
+#dev.off()
+histo <- as.data.frame(maxFPKMperGene)
+s1a <- ggplot(histo, aes(x = maxFPKMperGene)) + geom_histogram(bins = 1000, color = "black") +
+  theme_Publication(base_size = 12) +
+  xlab("Log2 (FPKM)") + ylab("Frequency")  + 
+  geom_vline(xintercept = log(20), linetype = "dashed", color = "red") +
+  scale_x_continuous(breaks = seq(from = -5, to = 15, by = 5))
+ggsave(plot = s1a, filename = 'results/plots/SuppFig1A.png', width = 6, height = 6)
 expDataFts <- expDataFts[apply(expDataFts, FUN=max, MARGIN=1)>20,] # 12334 genes
 print(paste("After filtering by FPKM, the total number of genes is", nrow(expDataFts)))
 
@@ -58,10 +66,17 @@ print(paste("After filtering by FPKM, the total number of genes is", nrow(expDat
 myCV <- function(x) { mean(x)/sd(x) }
 allCVs <- log2(apply(expDataFts, FUN=myCV, MARGIN=1))
 allCVs <- (allCVs-mean(allCVs))/sd(allCVs)
-png("results/plots/SuppFig1B.png", width=960, height=960, res=150)
-hist(allCVs, breaks=1000, xlab="Z-score of CVs (Log2 FPKM)", main="Histogram of Standardized CVs per Gene")
-abline(v=(-1), col="red", lwd=3, lty=2)
-dev.off()
+histo <- as.data.frame(allCVs)
+s1b <- ggplot(histo, aes(x = allCVs)) + geom_histogram(bins = 1000, color = "black") +
+  theme_Publication(base_size = 12) +
+  xlab("Z-score of CVs (Log2 FPKM)") + ylab("Frequency")  + 
+  geom_vline(xintercept = -1, linetype = "dashed", color = "red") +
+  scale_x_continuous(breaks = seq(from = -3, to = 1, by = 1))
+ggsave(s1b, filename = 'results/plots/SuppFig1B.png', width = 6, height = 6)
+# png("results/plots/SuppFig1B.png", width=960, height=960, res=150)
+# hist(allCVs, breaks=1000, xlab="Z-score of CVs (Log2 FPKM)", main="Histogram of Standardized CVs per Gene")
+# abline(v=(-1), col="red", lwd=3, lty=2)
+# dev.off()
 expDataFts <- expDataFts[allCVs>(-1),]  # 10335 genes
 print(paste("After filtering by CV, the total number of genes is", nrow(expDataFts)))
 
@@ -71,7 +86,7 @@ expDataFts <- expDataFts[order(-expDataFts[,"Max"]),]
 expDataFts[,"GeneName"] <- geneAnnot[rownames(expDataFts),2]
 expDataFts <- expDataFts[!duplicated(expDataFts[,"GeneName"]),]
 rownames(expDataFts)<- expDataFts[,"GeneName"]
-expDataFts <- expDataFts[1:(ncol(expDataFts)-2)] # 19871 rows
+expDataFts <- expDataFts[1:(ncol(expDataFts)-2)] # 10326 rows
 print(paste("After getting one gene symbol per row", nrow(expDataFts)))
 
 # Remove MT- and RPL and RPS genes
@@ -82,7 +97,7 @@ expDataFts <- expDataFts[!grepl("^RPL", rownames(expDataFts)),]
 expDataFts <- expDataFts[!grepl("^SNORD", rownames(expDataFts)),]
 expDataFts <- expDataFts[!grepl("-", rownames(expDataFts)),]
 expDataFts <- expDataFts[!grepl("\\.", rownames(expDataFts)),]
-print(paste("After removing MT and RPL genes, the total number of genes is", nrow(expDataFts)))
+print(paste("After removing MT and RPL genes, the total number of genes is", nrow(expDataFts))) # 9633
 
 
 ###################################
@@ -185,43 +200,44 @@ downGenes <- c(shhGenesDown, WNTGenesDown, g4GenesDown, g3GenesDown)
 
 # Best genes are up in some subtypes and down in others
 bestGenes <- sort(intersect(upGenes, downGenes)) #1399 genes
+write.table(data.frame(Gene = bestGenes), file = "results/tables/SuppTable1.csv", quote = F, row.names = F)
 
 ###################################
 # 5. Now print some plots / figures for paper to show how genes can discriminate subtypes
 ###################################
 # Start with a heatmap
 # heatmap top genes
-png("results/plots/Figure1B.png", width=1000, height=800, res=150)
+png("results/plots/Figure2B.png", width=1000, height=800, res=150)
 sampAnnot$Subgroup <- factor(sampAnnot$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT"))
 ann_colors = list(
   Subgroup = c(Group3 = "#F8766D", Group4 = "#7CAE00", SHH = "#00BFC4", WNT = "#C77CFF")
 )
-pheatmap::pheatmap(expDataFts_QN[bestGenes,], 
-                   show_rownames=F, show_colnames=F, 
-                   annotation_col= sampAnnot[2],
-                   annotation_colors =  ann_colors,
-                   clustering_distance_cols="correlation")
+fig2b <- pheatmap(expDataFts_QN[bestGenes,], 
+              show_rownames=F, show_colnames=F, 
+              annotation_col= sampAnnot[2],
+              annotation_colors =  ann_colors,
+              clustering_distance_cols="correlation")
 dev.off()
 
 # TSNE with all data
 tsneOut <- Rtsne::Rtsne(t(expDataFts_QN), initial_dims=100, perplexity=20, max_iter=1000)
 tsneOut <- data.frame(tsneOut$Y, sampAnnot)
-p <- ggplot2::ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
+tsne1 <- ggplot2::ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
 	ggplot2::geom_point(size = 5, alpha = 0.6)+
 	ggplot2::theme_bw()+
 	ggplot2::ggtitle("T-SNE Medulloblastoma All Genes")+
 	theme_Publication()
-ggsave(plot = p, filename = "results/plots/scatterPlotTSNE_AllGenes.png", width = 7, height = 6)
+ggsave(plot = tsne1, filename = "results/plots/scatterPlotTSNE_AllGenes.png", width = 7, height = 6)
 
 # TSNE only using Best Genes data
 tsneOut <- Rtsne(t(log2(expDataFts+1)[bestGenes,]), initial_dims=100, perplexity=20, max_iter=1000)
 tsneOut <- data.frame(tsneOut$Y, sampAnnot)
-ggplot2::ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
+tsne2 <- ggplot2::ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
 	ggplot2::geom_point(size = 5, alpha = 0.6)+
 	ggplot2::theme_bw()+
 	ggplot2::ggtitle("T-SNE Medulloblastoma Best Genes")+
 	theme_Publication()
-ggsave(filename = "results/plots/scatterPlotTSNE_TopGenes.png", width = 7, height = 6)
+ggsave(plot = tsne2, filename = "results/plots/scatterPlotTSNE_TopGenes.png", width = 7, height = 6)
 
 #################################
 # 6. Create Gene Ratios and filter 
@@ -246,9 +262,17 @@ print(paste("Gene Ratios created and processing ", nrow(geneRatioOut), "rows", s
 geneRatioOutM <- reshape2::melt(geneRatioOut)
 
 # Plot of gene ratios in dataset
-png("results/plots/SuppFig2B.png", width=800, height=800, res=150)
-hist(log2(geneRatioOutM[,2]), breaks=1000, main="Histogram of Gene Ratios (Log2)", xlab="Log2 Gene Ratio")
-dev.off()
+# png("results/plots/SuppFig1C.png", width=800, height=800, res=150)
+# s <- hist(log2(geneRatioOutM[,2]), breaks=1000, main="Histogram of Gene Ratios (Log2)", xlab="Log2 Gene Ratio")
+s1c <- ggplot(geneRatioOutM, aes(log2(value))) +
+  geom_histogram(bins = 1000, color = "black") + 
+  theme_Publication(base_size = 12) + ylab("Frequency") +
+  xlab("Log2 Gene Ratio")
+ggsave(filename = "results/plots/SuppFig1C.png", plot = s1c, width = 6, height = 6)
+# dev.off()
+
+# save all figures to combine later
+save(s1a, s1b, fig2b, s1c, file = "results/Fig_S1A_S1B_2B_S1C.RData")
 
 # Now run Limma on all Gene Ratios
 outputGR <- runLimma(sampAnnot[2], 
@@ -298,11 +322,11 @@ sampAnnot$Subgroup <- factor(sampAnnot$Subgroup, levels = c("Group3", "Group4", 
 ann_colors = list(
   Subgroup = c(Group3 = "#F8766D", Group4 = "#7CAE00", SHH = "#00BFC4", WNT = "#C77CFF")
 )
-pheatmap::pheatmap(log2(geneRatioOut[allGeneCombos,]), show_rownames=F, 
-                   show_colnames=F, annotation_col=sampAnnot[2],
-                   annotation_colors = ann_colors,
-                   clustering_distance_cols="correlation", 
-                   main="Heatmap Gene Ratios")
+pheatmap(log2(geneRatioOut[allGeneCombos,]), show_rownames=F, 
+         show_colnames=F, annotation_col=sampAnnot[2],
+         annotation_colors = ann_colors,
+         clustering_distance_cols="correlation", 
+         main="Heatmap Gene Ratios")
 dev.off()
 
 # TSNE 

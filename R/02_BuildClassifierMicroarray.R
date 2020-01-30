@@ -87,9 +87,14 @@ print(paste("Gene Ratios created and processing", nrow(geneRatioOut), "rows", se
 geneRatioOutM <- reshape2::melt(geneRatioOut)
 
 # Plot of gene ratios in dataset
-png("results/plots/SuppFig2A.png", width=800, height=800, res=150)
-hist(log2(geneRatioOutM[,2]), breaks=1000, main="Histogram of Gene Ratios (Log2)", xlab="Log2 Gene Ratio")
-dev.off()
+# png("results/plots/SuppFig2A.png", width=800, height=800, res=150)
+# hist(log2(geneRatioOutM[,2]), breaks=1000, main="Histogram of Gene Ratios (Log2)", xlab="Log2 Gene Ratio")
+s1d <- ggplot(geneRatioOutM, aes(log2(value))) +
+  geom_histogram(bins = 1000, color = "black") + 
+  theme_Publication(base_size = 12) + ylab("Frequency") +
+  xlab("Log2 Gene Ratio") 
+ggsave(filename = "results/plots/SuppFig1D.png", plot = s1d, width = 6, height = 6)
+save(s1d, file = "results/Fig_S1D.RData")
 
 ################################
 # 3. Filter to signature ratios

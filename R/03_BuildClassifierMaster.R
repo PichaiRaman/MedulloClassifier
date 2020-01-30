@@ -8,6 +8,7 @@
 library(ggplot2)
 library(Rtsne)
 library(tidyverse)
+source('R/utils/pubTheme.R')
 
 # build models
 source('R/utils/pubTheme.R')
@@ -39,15 +40,18 @@ print(paste("The total number of gene ratios in the model is", length(allGeneCom
 
 # Figure 1C: barplot of GERs per subtype
 medulloSigTS <- stack(medulloGeneSetsUp)
-medulloSigTSCount <- data.frame(table(medulloSigTS[,"ind"]))
-medulloSigTSCount$Var1 <- factor(medulloSigTSCount$Var1, levels = c("Group3", "Group4", "SHH", "WNT"))
+colnames(medulloSigTS) <- c("GeneRatio", "Subtype")
+write.csv(medulloSigTS, file = 'results/tables/SuppTable2.csv', quote = F, row.names = F)
+medulloSigTSCount <- data.frame(table(medulloSigTS[,"Subtype"]))
+medulloSigTSCount$Var1 <- factor(medulloSigTSCount$Var1, levels = c("Group3", "Group4", "SHH", "WNT", "Unknown"))
 colnames(medulloSigTSCount) <- c("subtype","gers")
-p  <- ggplot(medulloSigTSCount, aes(x = subtype, y = gers, fill = subtype)) + 
+fig2c  <- ggplot(medulloSigTSCount, aes(x = subtype, y = gers, fill = subtype)) + 
   geom_bar(stat = "identity") +
   geom_text(aes(label = gers, hjust = 0.5, vjust = 2), color = 'white') +
   xlab("Molecular Subtype") + ylab("Count of GERs") +  
-  theme_Publication() + guides(fill = FALSE)
-ggsave(plot = p, filename = "results/plots/Figure1C.png", width = 6, height = 4)
+  theme_Publication(base_size = 10) + guides(fill = FALSE)
+ggsave(plot = fig2c, filename = "results/plots/Figure2C.png", width = 6, height = 4)
+save(fig2c, file = 'results/Fig_2C.RData')
 
 # Save for use in other classes
 saveRDS(allGeneCombos, "data/model/bestFeaturesNew.RDS")
@@ -61,15 +65,20 @@ ds1sampAnnot <- ds1GER[[2]]
 set.seed(42)
 tsneOut <- Rtsne(t(log2(ds1geneRatioOut[intersect(allGeneCombos, rownames(ds1geneRatioOut)),])), initial_dims=200, perplexity=10, max_iter=500)
 tsneOut <- data.frame(tsneOut$Y, ds1sampAnnot)
-tsneOut$Subgroup <- factor(tsneOut$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT", "U"))
-p <- ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
+tsneOut$Subgroup <- factor(tsneOut$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT", "Unknown"))
+fig3a <- ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
   geom_point(size = 5, alpha = 0.6)+
   theme_bw()+
-  ggtitle("T-SNE Medulloblastoma Gene Ratios - DS1") +
-  theme_Publication() + xlab("PC1") + ylab("PC2")  +
-  scale_color_manual(values = c("Group3" = "#F8766D", "Group4" = "#7CAE00", "SHH" = "#00BFC4", "WNT" = "#C77CFF", "U" = "#000000"))
-p
-ggsave(plot = p, filename = "results/plots/Figure2A.png", width = 7, height = 6)
+  # ggtitle("T-SNE Medulloblastoma Gene Ratios - DS1") +
+  theme_Publication(base_size = 10) + xlab("PC1") + ylab("PC2")  +
+  theme(legend.position = "bottom", legend.direction = "horizontal") +
+  scale_color_manual(values = c("Group3" = "#F8766D", 
+                                "Group4" = "#7CAE00", 
+                                "SHH" = "#00BFC4", 
+                                "WNT" = "#C77CFF", 
+                                "Unknown" = "#000000"))
+fig3a
+ggsave(plot = fig3a, filename = "results/plots/Figure3A.png", width = 7, height = 6)
 
 # Figure 2C: T-SNE for DS2
 ds2GER <- readRDS("data/RNASeqDataForPlotDS2.RDS")
@@ -80,15 +89,21 @@ set.seed(150)
 tsneOut <- Rtsne(t(log2(ds2geneRatioOut[intersect(allGeneCombos, rownames(ds2geneRatioOut)),])), initial_dims=200, perplexity=10, max_iter=500)
 tsneOut <- data.frame(tsneOut$Y, ds2sampAnnot)
 colnames(tsneOut)[4] <- "Subgroup"
-tsneOut$Subgroup <- factor(tsneOut$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT", "U"))
-p <- ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
+tsneOut$Subgroup[tsneOut$Subgroup == "U"] <- "Unknown"
+tsneOut$Subgroup <- factor(tsneOut$Subgroup, levels = c("Group3", "Group4", "SHH", "WNT", "Unknown"))
+fig3b <- ggplot(tsneOut, aes(X1, X2, shape = Subgroup, color = Subgroup))+
   geom_point(size = 5, alpha = 0.6)+
   theme_bw()+
-  ggtitle("T-SNE Medulloblastoma Gene Ratios - DS2") +
-  theme_Publication() + xlab("PC1") + ylab("PC2") +
-  scale_color_manual(values = c("Group3" = "#F8766D", "Group4" = "#7CAE00", "SHH" = "#00BFC4", "WNT" = "#C77CFF", "U" = "#000000"))
-p
-ggsave(plot = p, filename = "results/plots/Figure2B.png", width = 7, height = 6)
+  # ggtitle("T-SNE Medulloblastoma Gene Ratios - DS2") +
+  theme_Publication(base_size = 10) + xlab("PC1") + ylab("PC2") +
+  theme(legend.position = "bottom", legend.direction = "horizontal") +
+  scale_color_manual(values = c("Group3" = "#F8766D", 
+                                "Group4" = "#7CAE00", 
+                                "SHH" = "#00BFC4", 
+                                "WNT" = "#C77CFF", 
+                                "Unknown" = "#000000"))
+fig3b
+ggsave(plot = q, filename = "results/plots/Figure3B.png", width = 7, height = 6)
 
 # Figure 2C: Frequency Plot
 medulloGeneSetsUpTS <- stack(medulloGeneSetsUp)
@@ -111,23 +126,38 @@ getTopXBar <- function(myMat=NULL, topx=5) {
   colnames(myTabTmp)[1] <- "Gene";
   p <- ggplot(myTabTmp, aes(Gene, Freq)) + 
     geom_bar(stat="identity") + facet_grid(~ind, scales="free")
-  p <- p + theme_Publication() + 
-    theme(axis.text.x = element_text(angle = 75, hjust=1))
+  p <- p + theme_Publication(base_size = 10) + 
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
   p <- p + ylab("Frequency")
   return(list(myTabTmp, p))
 }
 
 # Top 5
 upGeneMat$ind <- factor(upGeneMat$ind, levels = c("Group3", "Group4", "SHH", "WNT"))
-getTopXBar(upGeneMat)[[2]]
-ggsave("results/plots/Figure2C.png")
+fig3c <- getTopXBar(upGeneMat)[[2]]
+ggsave(plot = fig3c, filename = "results/plots/Figure3C.png", width = 7, height = 6)
 
 # Bottom 5
 downGeneMat$ind <- factor(downGeneMat$ind, levels = c("Group3", "Group4", "SHH", "WNT"))
-getTopXBar(downGeneMat)[[2]]
-ggsave("results/plots/Figure2D.png")
+fig3d <- getTopXBar(downGeneMat)[[2]]
+ggsave(plot = s, filename = "results/plots/Figure3D.png", width = 7, height = 6)
 
-# Figure3: Frequency Plot - Figure 3
+# Combine all Figure 3 plots
+library(ggpubr)
+library(gridExtra)
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
+mylegend <- g_legend(fig3b)
+ggexport(ggarrange(ggarrange(fig3a + theme(legend.position="none"), 
+                             fig3b + theme(legend.position="none"), nrow = 1, labels = c("A", "B")),
+                   mylegend,
+                   ggarrange(fig3c, fig3d, nrow = 1, labels = c("C", "D")), nrow = 3, heights = c(5, 1, 6)),
+         filename = "results/plots/Figure3.pdf", width = 10, height = 8)
+
+# Figure4: Frequency Plot - Figure 4
 ds1geneRatioOut <- ds1GER[[1]]
 ds1sampAnnot <- ds1GER[[2]]
 
@@ -159,14 +189,14 @@ getBoxPlot <- function(x, types) {
     geom_boxplot(lwd = 0.5, fatten = 0.5, outlier.shape = 1, width = 0.8, outlier.size = 1, aes(fill = Class)) +
     geom_jitter(width = 0.1, pch = 21, stroke = 0.2, aes(fill = Class)) +
     #  theme_bw() +
-    theme_Publication2() +
+    theme_Publication2(base_size = 10) +
     theme(axis.text.x = element_blank()) +
     facet_grid(Dataset~Feature) 
 }
 myRatios <- c("MAK_RGL1", "PTPN5_ROBO1", "ATOH1_OTX2", "AXIN2_DCX")
 types <- c("Group3", "Group4", "SHH", "WNT")
 getBoxPlot(myRatios, types)
-ggsave("results/plots/Figure3.png", width = 10, height = 5)
+ggsave("results/plots/Figure4.pdf", width = 10, height = 5)
 
 # Classify test datasets
 # Source scripts
